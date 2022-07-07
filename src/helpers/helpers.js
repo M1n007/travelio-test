@@ -1,7 +1,7 @@
 const fetch = require('node-fetch');
 const cheerio = require('cheerio');
 
-const getBooks = (query = 'Indonesia') => new Promise((resolve, reject) => {
+const getBooks = (query = 'alan') => new Promise((resolve, reject) => {
     fetch(`https://www.googleapis.com/books/v1/volumes?q=${query}`)
         .then(res => res.json())
         .then(res => resolve(res))

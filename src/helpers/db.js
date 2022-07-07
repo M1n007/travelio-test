@@ -1,9 +1,10 @@
 const { MongoClient } = require('mongodb');
+require("dotenv").config();
 
 
 class Db {
     constructor(){
-        this.mongoConnectionUri = 'mongodb://localhost:27017';
+        this.mongoConnectionUri = process.env.MONGODB_CONNECTION_URL;
         this.client = {};
         this.dbName = '';
         this.collectionName = ''

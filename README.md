@@ -22,4 +22,12 @@ To deploy this project with docker run
   docker-compose up -d
 ```
 
+To running logical test, just run 
+
+```bash
+  npm i
+  cd logical_test/   
+  node index.js
+```
+
 

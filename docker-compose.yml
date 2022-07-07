@@ -1,0 +1,21 @@
+version: '3.8'
+services: 
+  database:
+    image: mongo
+    restart: always
+    volumes: 
+      - my_data:/data/db 
+  node-web:
+    build:
+      dockerfile: Dockerfile
+    depends_on: 
+      - database
+    environment:
+      MONGODB_CONNECTION_URL: mongodb://database:27017
+    volumes: 
+      - ./:/app
+    ports: 
+      - "9020:3000"
+  
+volumes: 
+  my_data: 

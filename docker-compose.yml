@@ -6,8 +6,7 @@ services:
     volumes: 
       - my_data:/data/db 
   node-web:
-    build:
-      dockerfile: Dockerfile
+    build: .
     depends_on: 
       - database
     environment:

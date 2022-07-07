@@ -1,0 +1,265 @@
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <link rel="stylesheet" href="css/font-awesome.css" />
+    <link rel="stylesheet" href="css/bulma.css" />
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="css/raty.css" />
+
+
+    <title>Book List</title>
+
+    <script src="js/font-awesome.js"></script>
+    <script src="js/jquery.min.js"></script>
+    <script src="js/raty.js"></script>
+</head>
+
+<body>
+    <div id="search-wrapper" class="columns">
+        <div class="column">
+            <form>
+                <div class="control is-loading">
+                    <input class="input" type="text" placeholder="Search books" id="search-book">
+                </div>
+            </form>
+        </div>
+    </div>
+    <div>
+        <div style="padding-bottom:40px;">
+            <div style="display:flex;flex-direction:row;padding-left:20px;">
+                <h1 class="title">
+                    List Book
+                </h1>
+                <div>
+                    <div style="border:1px solid black;width:100px;margin-left:20px;margin-top:20px;"></div>
+                </div>
+            </div>
+        </div>
+        <% if(dataBook.length> 0) { %>
+            <% for(var i=0; i < dataBook.length; i++) { %>
+
+                <div class="columns" style="padding-left:20px;padding-right:20px;margin-left:50px;">
+                    <% for(var l=0; l < dataBook[i].length; l++) { %>
+                        <div class="column">
+
+                            <div
+                                style="display: flex; flex-direction:column; justify-content:center; margin-right:30px; ">
+                                <div id="thumbnail">
+                                    <% if (dataBook[i][l].volumeInfo.imageLinks){ %>
+                                        <img src="<%= dataBook[i][l].volumeInfo.imageLinks.thumbnail %>" />
+                                        <% } else { %>
+                                            <img
+                                                src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/65/No-Image-Placeholder.svg/1665px-No-Image-Placeholder.svg.png" />
+                                            <% } %>
+
+                                </div>
+                                <div id="title" style="size:6px; font-weight:bold;">
+                                    <%= dataBook[i][l].volumeInfo.title %>
+                                </div>
+                                <div id="author" style="size:6px; padding-top:10px;">
+                                    <span><b>Author : </b></span>
+                                    <%= dataBook[i][l].volumeInfo.authors %>
+                                </div>
+                                <div id="rate" style="size:6px; padding-top:10px;">
+                                    <div id="<%= dataBook[i][l].id %>"></div>
+                                </div>
+                                <div id="love" style="size:6px; padding-top:10px;">
+                                    <button class="button is-white submit-wishlist" id="submit-wishlist" data-id="<%= dataBook[i][l].id %>" book-detail="<%= JSON.stringify(dataBook[i][l]) %>">
+                                        <span class="icon" style="font-size:30px;color:grey;">
+                                            <i class="fas fa-heart"></i>
+                                        </span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <% } %>
+                </div>
+
+                <% } %>
+        <% } else { %>
+            <div>Tidak ada buku yang dicari.</div>
+        <% } %>
+
+        <div style="padding-bottom:40px;">
+            <div style="display:flex;flex-direction:row;padding-left:20px;">
+                <h1 class="title">
+                    My Wishlist
+                </h1>
+                <div>
+                    <div style="border:1px solid black;width:100px;margin-left:20px;margin-top:20px;"></div>
+                </div>
+            </div>
+            <div style="padding-left:20px;">
+                <div id="wishlist-data"></div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <script src="js/index.js"></script>
+    <script>
+        let typingTimer;                //timer identifier
+        let doneTypingInterval = 1000;
+
+        // Initialize the agent at application startup.
+        const fpPromise = import('https://openfpcdn.io/fingerprintjs/v3')
+            .then(FingerprintJS => FingerprintJS.load())
+
+       getVisitorId = () => new Promise((resolve, reject) => {
+        fpPromise
+        .then(fp => fp.get())
+        .then(result => {
+        // This is the visitor identifier:
+        const visitorId = result.visitorId
+        resolve(visitorId)
+        })
+        .catch(err => reject(err))
+       })
+
+
+        $('form > div').removeClass('is-loading')
+        $.raty.path = 'https://cdn.jsdelivr.net/npm/raty-js@3.1.0/lib/images';
+
+        <% for(var i=0; i < realDataBook.length; i++) { %>
+            $(`#rate > #<%= realDataBook[i].id %>`).raty({
+                readOnly: true,
+                score: <%= realDataBook[i].rating %>
+            }); 
+        <% } %>
+
+        $('#search-book').keyup(function (e) {
+
+            clearTimeout(typingTimer);
+            if ($('#search-book').val()) {
+                typingTimer = setTimeout(doneTypingSearchBook, doneTypingInterval);
+            }
+        });
+
+        function doneTypingSearchBook() {
+            const query = $('#search-book').val()
+
+            $('form > div').addClass('is-loading')
+            $.ajax({
+                url: "/",
+                data: {
+                    search: query
+                },
+                type: "GET",
+                timeout: 3600000,
+                success: function (data) {
+                    $('form > div').removeClass('is-loading')
+                    window.location.href = `/?search=${query}`;
+                },
+                error: function (data) {
+                    $('form > div').removeClass('is-loading')
+                    window.location.href = `/?search=${query}`;
+                },
+            });
+            
+        }
+
+
+        $('.submit-wishlist').click(async function (e) {
+            e.preventDefault();
+            const bookId = $(this).attr("data-id");
+            const bookDetail = JSON.parse($(this).attr("book-detail"));
+            const visitorId = await getVisitorId()
+            $.ajax({
+                url: "/wishlist",
+                data: {
+                    bookId,
+                    visitorId,
+                    bookDetail
+                },
+                type: "POST",
+                timeout: 3600000,
+                success: function (data) {
+                    console.log(data)
+                    $(`button[data-id="${bookId}"] > span`).css("color", "red");
+                }
+            });
+        });
+
+        async function getWishlist(){
+            const visitorId = await getVisitorId()
+
+
+            $.ajax({
+                url: "/wishlist",
+                data: {
+                    visitorId
+                },
+                type: "GET",
+                timeout: 3600000,
+                success: function (data) {
+                    if(data.result.length < 1){
+                        document.getElementById("wishlist-data").innerHTML = "U don't have wishlist";
+                    }else{
+                        let newHtml = '';
+                        const arrayChunkResult = arrayChunk(data.result, 4);
+                        for(var i = 0; i < arrayChunkResult.length; i++){
+                            let insideAppend = '';
+                            
+
+
+                            for(var l = 0; l < arrayChunkResult[i].length; l++){
+                                insideAppend += `
+                                <div class="column">
+
+                                    <div
+                                        style="display: flex; flex-direction:column; justify-content:center; margin-right:30px; ">
+                                        <div id="thumbnail">
+
+                                            ${arrayChunkResult[i][l]['bookDetail[volumeInfo][imageLinks][thumbnail]'] ? `<img src="${arrayChunkResult[i][l]['bookDetail[volumeInfo][imageLinks][thumbnail]']}" />` : `<img
+                                            src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/65/No-Image-Placeholder.svg/1665px-No-Image-Placeholder.svg.png" />` }
+                                        </div>
+                                        <div id="title" style="size:6px; font-weight:bold;">
+                                            ${arrayChunkResult[i][l]['bookDetail[volumeInfo][title]']}
+                                        </div>
+                                        <div id="author" style="size:6px; padding-top:10px;">
+                                            <span><b>Author : </b></span>
+                                            ${arrayChunkResult[i][l]['bookDetail[volumeInfo][authors][]']}
+                                        </div>
+                                        <div id="love" style="size:6px; padding-top:10px;">
+                                            <button class="button is-white submit-wishlist" id="submit-wishlist" data-id="${arrayChunkResult[i][l].bookId}" >
+                                                <span class="icon" style="font-size:30px;color:grey;">
+                                                    <i class="fas fa-heart"></i>
+                                                </span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                `;
+
+
+                            }
+
+                            const data =   `
+                            <div class="columns" style="padding-left:20px;padding-right:20px;margin-left:50px;">
+                                ${insideAppend}
+                            </div>
+                            `;
+
+
+                            newHtml += data;
+                            
+                        }
+                        document.getElementById("wishlist-data").innerHTML = newHtml;
+                    }
+
+                    window.location.reload()
+                    
+                }
+            });
+        }
+
+        getWishlist()
+
+    </script>
+</body>
+
+</html>

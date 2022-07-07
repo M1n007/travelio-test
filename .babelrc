@@ -1,0 +1,18 @@
+{
+    "presets": ["@babel/preset-env"],
+    "env": {
+      "test": {
+        "plugins": [ "istanbul" ]
+      }
+    },
+    "plugins": [
+      ["@babel/plugin-transform-runtime",
+        {
+          "regenerator": true
+        }
+      ]
+    ],
+    "ignore": [
+      "./src/public"
+    ]
+  }

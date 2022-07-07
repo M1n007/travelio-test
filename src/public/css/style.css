@@ -1,0 +1,10 @@
+body {
+    margin: 0;
+    padding:10px;
+}
+
+#thumbnail img {
+    width: 150px;
+    margin-left: 20px;
+    padding-bottom:10px;
+}

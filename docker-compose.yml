@@ -11,8 +11,6 @@ services:
       - database
     environment:
       MONGODB_CONNECTION_URL: mongodb://database:27017
-    volumes: 
-      - ./:/app
     ports: 
       - "9020:3000"
   
